@@ -236,7 +236,7 @@
             // 更新价格和利润显示
             document.getElementById(
               `${elementId}Price`
-            ).textContent = `Price: $${currentPrice.toFixed(7)}`; // 支持小币种价格显示
+            ).textContent = `Price: $${currentPrice.toFixed(6)}`; // 支持小币种价格显示
             document
               .getElementById(`${elementId}Profit`)
               .querySelector("p").textContent = `Profit: $${profit.toFixed(1)}`;
