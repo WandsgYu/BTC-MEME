@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profit Tracker</title>
+    <style>
+      /* 全局样式 */
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #1e1e2f, #2c2c3f);
+        color: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      /* 容器样式 */
+      .container {
+        background: rgba(44, 44, 63, 0.9);
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        padding: 24px; /* 减小内边距以适应移动端 */
+        width: 90%;
+        max-width: 1200px; /* 增大最大宽度 */
+        min-width: unset; /* 移除最小宽度限制 */
+        height: auto;
+        max-height: 90vh;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 24px; /* 减小间距以适应移动端 */
+        backdrop-filter: blur(10px);
+        box-sizing: border-box; /* 确保 padding 不会导致溢出 */
+      }
+
+      /* 卡片通用样式 */
+      .card {
+        background: rgba(57, 57, 77, 0.8);
+        border-radius: 12px;
+        padding: 24px; /* 减小内边距以适应移动端 */
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      }
+
+      /* 比例卡片样式 */
+      .ratio-card {
+        text-align: center;
+      }
+
+      .ratio-card h2 {
+        margin: 0;
+        font-size: 36px; /* 缩小字体 */
+        font-weight: 600;
+        color: #ffd700;
+      }
+
+      .ratio-card span {
+        font-size: 48px; /* 缩小字体 */
+        font-weight: bold;
+        color: #87ceeb;
+      }
+
+      /* 利润卡片样式 */
+      .profit-card {
+        position: relative;
+      }
+
+      .profit-card h2 {
+        margin: 0 0 16px 0; /* 减小间距 */
+        font-size: 32px; /* 缩小字体 */
+        font-weight: 600;
+        color: #ffd700;
+      }
+
+      .profit-card .price {
+        position: absolute;
+        top: 24px; /* 调整位置 */
+        right: 24px; /* 调整位置 */
+        font-size: 28px; /* 缩小字体 */
+        color: #87ceeb;
+      }
+
+      .profit-card p {
+        margin: 0;
+        font-size: 28px; /* 缩小字体 */
+        color: #ffffff;
+      }
+
+      /* 总利润样式 */
+      .total-profit {
+        text-align: center;
+      }
+
+      .total-profit p {
+        margin: 0;
+        font-size: 40px; /* 缩小字体 */
+        font-weight: bold;
+        color: #32cd32;
+      }
+
+      .converted-profit {
+        margin-top: 12px; /* 减小间距 */
+        font-size: 28px; /* 缩小字体 */
+        color: #87ceeb;
+      }
+
+      /* 响应式设计 */
+      @media (max-width: 600px) {
+        .container {
+          padding: 16px; /* 进一步减小内边距 */
+          gap: 16px; /* 进一步减小间距 */
+          width: 95%; /* 增加宽度以适应小屏幕 */
+        }
+
+        .card {
+          padding: 16px; /* 进一步减小内边距 */
+        }
+
+        .ratio-card h2 {
+          font-size: 28px; /* 进一步缩小字体 */
+        }
+
+        .ratio-card span {
+          font-size: 36px; /* 进一步缩小字体 */
+        }
+
+        .profit-card h2 {
+          font-size: 24px; /* 进一步缩小字体 */
+        }
+
+        .profit-card .price {
+          font-size: 20px; /* 进一步缩小字体 */
+          top: 16px; /* 调整位置 */
+          right: 16px; /* 调整位置 */
+        }
+
+        .profit-card p {
+          font-size: 20px; /* 进一步缩小字体 */
+        }
+
+        .total-profit p {
+          font-size: 32px; /* 进一步缩小字体 */
+        }
+
+        .converted-profit {
+          font-size: 20px; /* 进一步缩小字体 */
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- 总利润卡片 -->
+      <div class="card total-profit">
+        <p id="totalProfit">USD:Loading</p>
+        <p class="converted-profit" id="totalProfitCny">
+          CNY:Loading
+        </p>
+      </div>
+
+      <!-- BTC 利润卡片 -->
+      <div class="card profit-card" id="btcProfit">
+        <h2>BTC</h2>
+        <span class="price" id="btcPrice">Price: $0.00</span>
+        <p>Profit: Calculating...</p>
+      </div>
+
+      <!-- MEME 利润卡片 -->
+      <div class="card profit-card" id="memeProfit">
+        <h2>MEME</h2>
+        <span class="price" id="memePrice">Price: $0.00</span>
+        <p>Profit: Calculating...</p>
+      </div>
+    </div>
+
+    <script>
+      const exchangeRate = 7.21; // USD to CNY
+
+      // 仓位信息
+      const BTC = {
+        symbol: "BTC",
+        usdtValue: 9474,
+        entryPrice: 96600,
+        isShort: false,
+      };
+      const MEME = {
+        symbol: "MEME",
+        usdtValue: 2994,
+        entryPrice: 0.004243,
+        isShort: true,
+      };
+
+      const updateInterval = 500; // ms
+      const apiUrlBase =
+        "https://api.bitget.com/api/mix/v1/market/ticker?symbol=";
+
+      async function fetchPrice(symbol) {
+        try {
+          const response = await fetch(
+            `${apiUrlBase}${symbol}USDT_UMCBL` // 使用模板字符串
+          );
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          return parseFloat(data.data.last);
+        } catch (error) {
+          console.error(`Error fetching price for ${symbol}:`, error);
+          return null;
+        }
+      }
+
+      async function updateProfit() {
+        let totalProfitUsd = 0;
+
+        // 更新每个仓位的利润
+        const updatePositionProfit = async (position, elementId) => {
+          const currentPrice = await fetchPrice(position.symbol);
+          if (currentPrice !== null) {
+            const positionSize = position.usdtValue / position.entryPrice; // 计算持仓量
+            const profit = position.isShort
+              ? (position.entryPrice - currentPrice) * positionSize
+              : (currentPrice - position.entryPrice) * positionSize;
+            totalProfitUsd += profit;
+
+            // 更新价格和利润显示
+            document.getElementById(
+              `${elementId}Price`
+            ).textContent = `Price: $${currentPrice.toFixed(7)}`; // 支持小币种价格显示
+            document
+              .getElementById(`${elementId}Profit`)
+              .querySelector("p").textContent = `Profit: $${profit.toFixed(1)}`;
+          }
+        };
+
+        // 更新每个仓位
+        await updatePositionProfit(BTC, "btc");
+        await updatePositionProfit(MEME, "meme");
+
+        // 更新总利润
+        const totalProfitCny = totalProfitUsd * exchangeRate;
+        document.getElementById(
+          "totalProfit"
+        ).textContent = `USD: $${totalProfitUsd.toFixed(0)}`;
+        document.getElementById(
+          "totalProfitCny"
+        ).textContent = `CNY: ¥${totalProfitCny.toFixed(0)}`;
+
+        // 更新标题
+        document.title = `BTC-MEME ¥${totalProfitCny.toFixed(0)}`;
+      }
+
+      // 每 0.5 秒更新一次利润
+      setInterval(updateProfit, updateInterval);
+
+      // 初始加载
+      updateProfit();
+    </script>
+  </body>
+</html>
